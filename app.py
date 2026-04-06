@@ -413,10 +413,17 @@ if uploaded_file:
 st.markdown("---")
 st.subheader("Active Supplier MOQ & Deadline Tracker")
 
+st.caption(
+    "This view consolidates supplier MOQ requirements and order deadlines across uploaded documents to support procurement prioritization."
+)
+
 if st.session_state.tracker_data:
     tracker_df = pd.DataFrame(st.session_state.tracker_data)
+
+    # Display table
     st.dataframe(tracker_df, use_container_width=True)
 
+    # Status summary
     urgent_count = (tracker_df["Status"] == "Urgent").sum()
     upcoming_count = (tracker_df["Status"] == "Upcoming").sum()
     planned_count = (tracker_df["Status"] == "Planned").sum()
@@ -425,9 +432,29 @@ if st.session_state.tracker_data:
     a.error(f"Urgent: {urgent_count}")
     b.warning(f"Upcoming: {upcoming_count}")
     c.success(f"Planned: {planned_count}")
+
+    # -----------------------------
+    # Buttons row (Reset + Download)
+    # -----------------------------
+    btn1, btn2 = st.columns(2)
+
+    with btn1:
+        if st.button("Reset Tracker"):
+            st.session_state.tracker_data = []
+            st.success("Tracker has been reset.")
+
+    with btn2:
+        csv = tracker_df.to_csv(index=False).encode("utf-8")
+
+        st.download_button(
+            label="Download CSV",
+            data=csv,
+            file_name="supplier_moq_tracker.csv",
+            mime="text/csv"
+        )
+
 else:
     st.info("No supplier records added yet. Upload a document and click 'Add to MOQ Tracker'.")
-
 # -----------------------------
 # Footer
 # -----------------------------
